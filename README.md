@@ -1,3 +1,11 @@
+Changes to original
+
+- changed || to , seperator
+- changed last combined DayXZ column seperator from , to ;
+- added a LineNo column to identify changed entrys when comparing
+- added a .replace('\x00', '') because I had one which causes further errors
+
+
 ![KStrike](https://github.com/brimorlabs/KStrike/blob/master/logo.png?raw=true)
 
 
