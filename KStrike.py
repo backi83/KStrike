@@ -99,7 +99,7 @@ def win_date_bin_to_datetime(win_date_bin): #This converts the datetime field of
         windowsdt = datetime(1601,1,1,0,0,0) + timedelta(microseconds=decimaldate/10) #Yay math!
     except:
         windowsdt = "UNRECOGNIZED TIMESTAMP"
-    sys.stdout.write(str(windowsdt)+",")
+    output_file.write(str(windowsdt)+",")
     fourofyear=str(windowsdt)[0:4] #Pulling the four of the year
     fullyyyymmdd=str(windowsdt)[0:10] # Pulling the full yyyy-mm-dd
     twoofhour=str(windowsdt)[11:13] #Pulling the two of hour
@@ -150,7 +150,7 @@ def Check_Column_Type(Table_Record, Column_Type, Column_Number, Record_List): #A
           return Record_List.append(win_date_bin_to_datetime(Table_Record.get_value_data(Column_Number)))
     elif (Column_Type == 9): #BINARY_DATA_TO_HEX
        if (Table_Record.get_value_data(Column_Number) == None):
-          sys.stdout.write("NO BINARY_DATA_TO_HEX,NO BINARY_DATA_TO_HEX,") #Writing data out if the loop doesn't work. Including the statement, just to make sure
+          output_file.write("NO BINARY_DATA_TO_HEX,NO BINARY_DATA_TO_HEX,") #Writing data out if the loop doesn't work. Including the statement, just to make sure
        else:
           hexdb=binascii.hexlify(Table_Record.get_value_data(Column_Number)) #Turning the binary data to hex
           macaddress=hexdb.decode('utf-8', 'ignore') 
@@ -160,7 +160,7 @@ def Check_Column_Type(Table_Record, Column_Type, Column_Number, Record_List): #A
               ipaddr = "%i.%i.%i.%i" % (int(hexdb[0:2],16),int(hexdb[2:4],16),int(hexdb[4:6],16),int(hexdb[6:8],16)) #Proper formatting
               raw_ipaddr_correlations = DNS_Dict.get(ipaddr, "No Match for IP address found") #Looking up value-key in DNS_Dict dictionary file above
               ipaddr_correlations = str(raw_ipaddr_correlations).strip("[]") #Removing brackets
-              sys.stdout.write(str(macaddress).upper()+","+str(ipaddr)+" ("+str(ipaddr_correlations)+"),") #Writing raw address and converted address to stdout
+              output_file.write(str(macaddress).upper()+","+str(ipaddr)+" ("+str(ipaddr_correlations)+"),") #Writing raw address and converted address to stdout
           elif (((macaddress[:4] == "fe80") or (macaddress[:4] == "2001")) and (Column_Name == "Address") and (len(hexdb) == 32)): # A couple of checks for the IPV6 address formatting. So far have only seen fe80 and 2001, there may be more
               colonaddedtohexdb = ':'.join(macaddress[i:i + 4] for i in range(0, len(macaddress), 4)) #Adding colons to the IPV6 address
               ipv6Parts = colonaddedtohexdb.split(":") #Splitting for future ease
@@ -176,11 +176,11 @@ def Check_Column_Type(Table_Record, Column_Type, Column_Number, Record_List): #A
               del macParts[3] #Nope again
               rawmacparts = ":".join(macParts) #More formatting
               finalmac=str(rawmacparts).upper() #Upper case  
-              sys.stdout.write(str(macaddress).upper()+","+str(colonaddedtohexdb)+" IPv6 MAC: "+str(finalmac)+",") #Writing raw address and converted address to stdout
+              output_file.write(str(macaddress).upper()+","+str(colonaddedtohexdb)+" IPv6 MAC: "+str(finalmac)+",") #Writing raw address and converted address to stdout
           elif ( (str(macaddress) == "00000000000000000000000000000001") and (Column_Name == "Address") and (len(hexdb) == 32)): # A couple of checks for the IPV6 local host address formatting
-              sys.stdout.write(str(macaddress).upper()+",Local Host ::1,") #Writing the data out if the address is local host IPv6
+              output_file.write(str(macaddress).upper()+",Local Host ::1,") #Writing the data out if the address is local host IPv6
           else:
-              sys.stdout.write(str(macaddress).upper()+",Unable to convert data,") #Writing data out if the loop doesn't work. Including the statement, just to make sure
+              output_file.write(str(macaddress).upper()+",Unable to convert data,") #Writing data out if the loop doesn't work. Including the statement, just to make sure
     elif (Column_Type == 10): #TEXT	
        if (Table_Record.get_value_data(Column_Number) == None):
           return Record_List.append('')
@@ -195,17 +195,17 @@ def Check_Column_Type(Table_Record, Column_Type, Column_Number, Record_List): #A
        if ((Table_Record.get_value_data(Column_Number) == None) and (Column_Name == "ClientName")):
           return Record_List.append('') #Returning Nothing for ClientName
        elif ((Table_Record.get_value_data(Column_Number) == None) and (Column_Name == "AuthenticatedUserName")):
-          sys.stdout.write("<BLANK>,") #Printing the large text data
+          output_file.write("<BLANK>,") #Printing the large text data
        elif ((Table_Record.get_value_data(Column_Number) == "\x00\x00") and (Column_Name == "AuthenticatedUserName")):
-          sys.stdout.write("<BLANK>,") #Printing the large text data
+          output_file.write("<BLANK>,") #Printing the large text data
        elif ((Table_Record.get_value_data(Column_Number) == "") and (Column_Name == "AuthenticatedUserName")):
-          sys.stdout.write("<BLANK>,") #Printing the large text data
+          output_file.write("<BLANK>,") #Printing the large text data
        elif ((Column_Name == "Address") and (Table_name == "DNS" )): #Pulling out IP address from DNS table
           global ip_address_from_dns #Declaring the global variable
           ip_address_from_dns = Table_Record.get_value_data(Column_Number).decode('utf-16', 'ignore').replace('\x00', '') #Assigning the IP address to the variable
        elif ((Column_Name == "HostName") and (Table_name == "DNS" )): #Pulling out Hostname from DNS table
           hostname_from_dns = Table_Record.get_value_data(Column_Number).decode('utf-16', 'ignore').replace('\x00', '') #Assigning the Hostname to the variable
-          #sys.stdout.write("DNS IP Address is "+ip_address_from_dns+" hostname is "+str(hostname_from_dns)+"\r\n")
+          #output_file.write("DNS IP Address is "+ip_address_from_dns+" hostname is "+str(hostname_from_dns)+"\r\n")
           if ip_address_from_dns in DNS_Dict: #Populating DNS_Dict dictionary varaiable
               DNS_Dict[str(ip_address_from_dns)].append(str(hostname_from_dns)) #Append if value is seen
           else:
@@ -214,11 +214,11 @@ def Check_Column_Type(Table_Record, Column_Type, Column_Number, Record_List): #A
           large_text = Table_Record.get_value_data(Column_Number).decode('utf-16', 'ignore').replace('\x00', '') #added cause had 0 bytes in output which causes problems
           lengthoflarge_text=len(large_text) #Computing the length, as another check
           if ((lengthoflarge_text > 1) and (pythonversion == 2) ):
-            sys.stdout.write(large_text.encode('utf-8')+",") #Printing the large text data if value is greater than 1
+            output_file.write(large_text.encode('utf-8')+",") #Printing the large text data if value is greater than 1
           elif ((lengthoflarge_text > 1) and (pythonversion > 2) ):
-            sys.stdout.write(large_text+",") #Printing the large text data if value is greater than 1
+            output_file.write(large_text+",") #Printing the large text data if value is greater than 1
           else:
-            sys.stdout.write("<BLANK>,") #Printing the large text data if value is not greater than 1
+            output_file.write("<BLANK>,") #Printing the large text data if value is not greater than 1
     elif (Column_Type == 13): #SUPER_LARGE_VALUE
        return Record_List.append(Table_Record.get_value_data_as_integer(Column_Number))	
     elif (Column_Type == 14): #INTEGER_32BIT_UNSIGNED	
@@ -226,14 +226,14 @@ def Check_Column_Type(Table_Record, Column_Type, Column_Number, Record_List): #A
        if (Column_Name == "TotalAccesses"): #Ensuring total accesses column name is correct
            global totalcountofaccesses #Calling the global variable
            totalcountofaccesses=int32bitunsigned #Setting the global variable for a check later on
-           sys.stdout.write(int32bitunsigned+",") #Printing the number of Accesses
+           output_file.write(int32bitunsigned+",") #Printing the number of Accesses
        else:
-           sys.stdout.write(int32bitunsigned+",") #Printing the number
+           output_file.write(int32bitunsigned+",") #Printing the number
     elif (Column_Type == 15): #INTEGER_64BIT_SIGNED
        return Record_List.append(Table_Record.get_value_data_as_integer(Column_Number))	
     elif (Column_Type == 16): #GUID	
        if (Table_Record.get_value_data(Column_Number) == None):
-           sys.stdout.write("NO GUID DATA,") #Printing the string
+           output_file.write("NO GUID DATA,") #Printing the string
        else:
           uuid_Bytes = Table_Record.get_value_data(Column_Number)
           orgguid = uuid.UUID(bytes_le=uuid_Bytes) #Turning the data into a GUID
@@ -243,14 +243,14 @@ def Check_Column_Type(Table_Record, Column_Type, Column_Number, Record_List): #A
           fullguid='{'+ucrawguid+'}' #Building the GUID for the table lookup
           if (Column_Name == "RoleGuid"): #Ensuring Column Name is correct
               GUID_conversion = GUID_Dict.get(fullguid, "No Match for GUID found") #Looking up value-key in GUID_Dict dictionary file above
-              sys.stdout.write(fullguid+" ("+GUID_conversion+"),") #Writing the string           
+              output_file.write(fullguid+" ("+GUID_conversion+"),") #Writing the string           
           else:
-              sys.stdout.write(fullguid+",") #If it doesn't work, writing the string
+              output_file.write(fullguid+",") #If it doesn't work, writing the string
     elif (Column_Type == 17): #INTEGER_16BIT_UNSIGNED
        value=Table_Record.get_value_data_as_integer(Column_Number)
        if ( (value > 0) and ( "Day" in str(Column_Name)) ): #Checking to see if Day is in the field. If so, we will do some converting
            juliandate= str(Column_Name)[3:] #Pulling out Julian Date
-           #sys.stdout.write(str(juliandate)+" is Julian Date\r\n")
+           #output_file.write(str(juliandate)+" is Julian Date\r\n")
            global insertdatefourofyear #Pulling the insert date four of year
            global lastaccessfourofyear #Pulling the last access four of year
            global lastaccessyyyymmdd #Pulling the last access yyyymmdd
@@ -259,11 +259,11 @@ def Check_Column_Type(Table_Record, Column_Type, Column_Number, Record_List): #A
            global correlatedtwoaccessmismatchyear #Calling on the global variable of correlatedtwoaccessmismatchyear
            if ( (int(insertdatefourofyear)) != (int(lastaccessfourofyear)) and (Column_Name != "Day1") and (totalcountofaccesses == "2") ) : #We enter this loop if the years don't match, the day isn't Day1, and the count of accesses is two (because we can deduce what is what)
                if (correlatedtwoaccessmismatchyear != "Yes"): #A nested loop, because we need to do this
-                   sys.stdout.write(str(insertdateyyyymmdd)+":1, "+str(lastaccessyyyymmdd)+":1") #Writing the string here
+                   output_file.write(str(insertdateyyyymmdd)+":1, "+str(lastaccessyyyymmdd)+":1") #Writing the string here
                    correlatedtwoaccessmismatchyear="Yes" #Setting the variable to yes
            else:
                if ( (int(insertdatefourofyear)) != (int(lastaccessfourofyear)) and (Column_Name != "Day1") and (totalcountofaccesses > "2") and (badyeardetector != "Yes") ) : #We enter this loop if the years don't match, the day isn't Day1, and the count of accesses is greater than two. Because who knows what is going on with this database here?
-                   sys.stdout.write("**** WARNING: Multiple years detected, correlated \"DatesAndAccesses\" may not be accurate **** ") #Writing the WARNING string here
+                   output_file.write("**** WARNING: Multiple years detected, correlated \"DatesAndAccesses\" may not be accurate **** ") #Writing the WARNING string here
                    badyeardetector="Yes" #Setting the value to Yes
                import datetime #Yes, this has to happen here too
                #Checking to see if the hour is 23 and day is 31. The day should be 1, however, time skew can happen, and we are accounting for that here
@@ -272,17 +272,17 @@ def Check_Column_Type(Table_Record, Column_Type, Column_Number, Record_List): #A
                    insertdatefourofyear = properinsertdatefourofyear #Setting the global variable to the proper value of +1
                testingd = datetime.datetime.strptime('{} {}'.format(juliandate, insertdatefourofyear),'%j %Y') #Formatting the day to datetime
                fullconvjd = testingd.strftime("%Y-%m-%d") #Another formatting
-               sys.stdout.write(str(fullconvjd)+": "+str(value)+"; ") #Printing the string
+               output_file.write(str(fullconvjd)+": "+str(value)+"; ") #Printing the string
        elif ( value > 0):
-           sys.stdout.write(str(Column_Name)+" "+str(value)+"; ") #Printing the string
+           output_file.write(str(Column_Name)+" "+str(value)+"; ") #Printing the string
        else:
-           sys.stdout.write("") #Printing the string
+           output_file.write("") #Printing the string
 
 
 if len(sys.argv) == 1:
     sys.stderr.write("\r\n88      a8P   ad88888ba                      88  88\r\n88    ,88'   d8\"     \"8b  ,d                 \"\"  88\r\n88  ,88\"     Y8,          88                     88\r\n88,d88'      `Y8aaaaa,  MM88MMM  8b,dPPYba,  88  88   ,d8   ,adPPYba,\r\n8888\"88,       `\"\"\"\"\"8b,  88     88P'   \"Y8  88  88 ,a8\"   a8P_____88\r\n88P   Y8b            `8b  88     88          88  8888[     8PP\"\"\"\"\"\"\"\r\n88     \"88,  Y8a     a8P  88,    88          88  88`\"Yba,  \"8b,   ,aa\r\n88       Y8b  \"Y88888P\"   \"Y888  88          88  88   `Y8a  `\"Ybbd8\"'\r\n\r\n") #Writing ASCII art to STDERr
     sys.stderr.write("Version "+str(kstrikeversionnumber)+"\r\n") #Writing version to STDERR
-    sys.stderr.write("\r\nThis script will parse on-disk User Access Logging found on Windows Server 2012\r\nand later systems under the path \"\Windows\System32\LogFiles\SUM\"\r\nThe output is double pipe || delimited\r\n\r\n\r\nExample Usage: KStrike.py Current.mdb > SYSNAME_Current.txt\r\n\r\n") #Writing info to SDTERR
+    sys.stderr.write("\r\nThis script will parse on-disk User Access Logging found on Windows Server 2012\r\nand later systems under the path \"\Windows\System32\LogFiles\SUM\"\r\nThe output is CSV\r\n\r\n\r\nExample Usage: KStrike.py Current.mdb Output.csv\r\n\r\n") #Writing info to SDTERR
     sys.exit() #A nice clean exit
 #First, we figure the version of python we are running
 if sys.version_info[0] < 3:
@@ -290,7 +290,10 @@ if sys.version_info[0] < 3:
 else:
     pythonversion=3
 sys.stderr.write("\r\nPython Version" +str(pythonversion)+" detected\r\n\r\n") #Writing info to SDTERR
+
 file_object = open(sys.argv[1], "rb") #Opening file
+output_file = open(sys.argv[2], "w+")
+
 esedb_file = pyesedb.file() #ESE db needed things
 esedb_file.open_file_object(file_object) #ESE db needed things
 Num_Of_tables = esedb_file.get_number_of_tables() #ESE db needed things
@@ -333,10 +336,10 @@ Template_Name = ClientsTable. get_template_name() #Grabbing name
 Table_Num_Columns = ClientsTable.get_number_of_columns() #Grabbing Columns
 Table_Num_Records = ClientsTable.get_number_of_records() #Grabbing Records
 if (Table_Num_Records > 0 and Table_name == "CLIENTS"): #Another check to ensure we process the right table
-    sys.stdout.write("LineNo,RoleGuid (RoleName),TenantId,TotalAccesses,InsertDate,LastAccess,RawAddress,ConvertedAddress (Correlated_HostName(s)),AuthenticatedUserName,DatesAndAccesses\r\n") #This is the header
+    output_file.write("LineNo,RoleGuid (RoleName),TenantId,TotalAccesses,InsertDate,LastAccess,RawAddress,ConvertedAddress (Correlated_HostName(s)),AuthenticatedUserName,DatesAndAccesses\r\n") #This is the header
     for t in range(0,Table_Num_Records): #Looping through the data
        progresscounter=(t + 1) #Since count starts at zero, we need to add one
-       sys.stdout.write(str(progresscounter)+",")
+       output_file.write(str(progresscounter)+",")
        sys.stderr.write("Parsing "+str(progresscounter)+" of "+str(Table_Num_Records)+" CLIENTS table records\r\n") #Needed for debugging
        for x in range(0, Table_Num_Columns): #Stepping through the data
          Data_Value=[] #To be used later
@@ -344,14 +347,14 @@ if (Table_Num_Records > 0 and Table_name == "CLIENTS"): #Another check to ensure
          Column_Name = Table_Record.get_column_name(x) #Getting name
          Column_Type = Table_Record.get_column_type(x) #Getting type
          Check_Column_Type(Table_Record, Column_Type, x, Data_Value) #Arguments to pass to subroutine
-       sys.stdout.write("\r\n") #Last bit of formatting to string
+       output_file.write("\r\n") #Last bit of formatting to string
        badyeardetector="No" #Changing it back to No
        correlatedtwoaccessmismatchyear="No" #Changing it back to No
 else:
     sys.stderr.write("The table \"CLIENTS\" has zero records\r\n")
     progresscounter="0"
 esedb_file.close() #Close db
-
+output_file.close()
 scriptruntime=(time.time() - StartTime) #Calculating the run time
 formattedscriptruntime=int(scriptruntime) #Making an integer for the result
 #If it is less than 60, we print seconds. Otherwise, we format it H:MM:SS format
