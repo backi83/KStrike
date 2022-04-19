@@ -1,5 +1,6 @@
 Changes to original
 
+- output to file instead stdout because of encoding mess in windows console
 - changed || to , seperator
 - changed last combined DayXZ column seperator from , to ;
 - added a LineNo column to identify changed entrys when comparing
