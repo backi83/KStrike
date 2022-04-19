@@ -1,6 +1,7 @@
 Changes to original
 
 - output to file instead stdout because of encoding mess in windows console
+- removed \r from line breaks in the header and in each to output printed row. its causing 0D0D0A line breaks. \r is printed as it is and \n will be converted to \r\n because we opened outputfile in text mode
 - changed || to , seperator
 - changed last combined DayXZ column seperator from , to ;
 - added a LineNo column to identify changed entrys when comparing
