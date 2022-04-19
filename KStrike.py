@@ -336,7 +336,7 @@ Template_Name = ClientsTable. get_template_name() #Grabbing name
 Table_Num_Columns = ClientsTable.get_number_of_columns() #Grabbing Columns
 Table_Num_Records = ClientsTable.get_number_of_records() #Grabbing Records
 if (Table_Num_Records > 0 and Table_name == "CLIENTS"): #Another check to ensure we process the right table
-    output_file.write("LineNo,RoleGuid (RoleName),TenantId,TotalAccesses,InsertDate,LastAccess,RawAddress,ConvertedAddress (Correlated_HostName(s)),AuthenticatedUserName,DatesAndAccesses\r\n") #This is the header
+    output_file.write("LineNo,RoleGuid (RoleName),TenantId,TotalAccesses,InsertDate,LastAccess,RawAddress,ConvertedAddress (Correlated_HostName(s)),AuthenticatedUserName,DatesAndAccesses\n") #This is the header
     for t in range(0,Table_Num_Records): #Looping through the data
        progresscounter=(t + 1) #Since count starts at zero, we need to add one
        output_file.write(str(progresscounter)+",")
@@ -347,7 +347,7 @@ if (Table_Num_Records > 0 and Table_name == "CLIENTS"): #Another check to ensure
          Column_Name = Table_Record.get_column_name(x) #Getting name
          Column_Type = Table_Record.get_column_type(x) #Getting type
          Check_Column_Type(Table_Record, Column_Type, x, Data_Value) #Arguments to pass to subroutine
-       output_file.write("\r\n") #Last bit of formatting to string
+       output_file.write("\n") #Last bit of formatting to string
        badyeardetector="No" #Changing it back to No
        correlatedtwoaccessmismatchyear="No" #Changing it back to No
 else:
