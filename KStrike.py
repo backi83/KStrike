@@ -159,7 +159,7 @@ def Check_Column_Type(Table_Record, Column_Type, Column_Number, Record_List): #A
                   hexdb = ''.join(('0',hexdb)) #Adding zeros to make sure everything is correct
               ipaddr = "%i.%i.%i.%i" % (int(hexdb[0:2],16),int(hexdb[2:4],16),int(hexdb[4:6],16),int(hexdb[6:8],16)) #Proper formatting
               raw_ipaddr_correlations = DNS_Dict.get(ipaddr, "No Match for IP address found") #Looking up value-key in DNS_Dict dictionary file above
-              ipaddr_correlations = str(raw_ipaddr_correlations).strip("[]") #Removing brackets
+              ipaddr_correlations = str(raw_ipaddr_correlations).strip("[]").replace(',',';') #Removing brackets
               output_file.write(str(macaddress).upper()+","+str(ipaddr)+" ("+str(ipaddr_correlations)+"),") #Writing raw address and converted address to stdout
           elif (((macaddress[:4] == "fe80") or (macaddress[:4] == "2001")) and (Column_Name == "Address") and (len(hexdb) == 32)): # A couple of checks for the IPV6 address formatting. So far have only seen fe80 and 2001, there may be more
               colonaddedtohexdb = ':'.join(macaddress[i:i + 4] for i in range(0, len(macaddress), 4)) #Adding colons to the IPV6 address
